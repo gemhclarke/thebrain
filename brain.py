@@ -6,6 +6,7 @@ from time import sleep
 bstick1 = blinkstick.find_first()
 from mpu6050 import mpu6050
 from threading import Thread
+import pygame
 import os
 
 
@@ -20,10 +21,10 @@ def leds_reset():
 
 
 def leds_morph( colour, brightness ):
-    #
+
     # This function loops through all 8 LEDs checking the value of gyro_x on each loop. If gyro_x is 
     # outside of pre-defined range, the defense systems are called.
-    #
+
     for led_number in range(8):
         r,g,b = adjust_brightness( colour, brightness )
 	#print("Setting led " + str(led_number) + " to HEX: " + colour + " RGB: "+ str(r) + " " + str(g) + " " + str(b) )
@@ -37,6 +38,10 @@ def leds_morph( colour, brightness ):
 
 
 def leds_gyro_emergency():
+
+    # Start the sound thread 
+    st = Thread(target=play_emergency_sound)
+    st.start()
 
     for count in range(5):
         for led_number in range(8):
@@ -63,6 +68,14 @@ def adjust_brightness( colour, brightness ):
     g = g * (brightness/100)
     b = b * (brightness/100)
     return(r,g,b)
+
+def play_emergency_sound():
+    pygame.mixer.init()
+    pygame.mixer.music.load("audio/alien_danger.wav")
+    pygame.mixer.music.play()
+    while pygame.mixer.music.get_busy() == True:
+        sleep(.25)
+
 
 
 def monitor(a):
