@@ -1,7 +1,7 @@
 import time
 import pygame
 pygame.mixer.init()
-pygame.mixer.music.load("../audio/buzzer.wav")
+pygame.mixer.music.load("audio/buzzer.wav")
 
 for count in range (5):
   pygame.mixer.music.play()

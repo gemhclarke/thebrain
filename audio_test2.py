@@ -1,0 +1,82 @@
+# ===================================================================
+# Setup
+# ===================================================================
+from time import sleep
+import sys, termios, tty, os, pygame, threading
+
+# ===================================================================
+# Functions
+# ===================================================================
+
+def play_emergency_sound():
+    print("Playing emergency sound")
+    while getattr(emergency_sound_thread, "do_run", True):
+        pygame.mixer.init()
+        pygame.mixer.music.load("audio/alien_danger.wav")
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy() == True:
+            sleep(.25)
+
+    print( "Stopping emergency sound" )
+
+
+def play_background_sound():
+    print("Playing background sound")
+    print(threading.enumerate())
+
+    while getattr(background_sound_thread, "do_run", True):
+        pygame.mixer.init()
+        pygame.mixer.music.load("audio/buzzer.wav")
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy() == True:
+            sleep(.25)
+
+    print( "Stopping background sound" )
+
+
+def get_keypress():
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(sys.stdin.fileno())
+        key = sys.stdin.read(1)
+ 
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return key
+
+
+# ===================================================================
+# Main program 
+# ===================================================================
+
+# Start the background sound
+#bst = threading.Thread( target=play_background_sound, args=() )
+#bst.start()
+
+while True:
+    key = get_keypress()
+
+    if (key == "0"):
+        print("Exiting!")
+        exit(0)
+ 
+    if (key == "1"):
+        print("1 pressed")
+        global background_sound_thread
+        background_sound_thread = threading.Thread( target=play_background_sound, args=() )
+        background_sound_thread.start()
+
+    if (key == "2"):
+        print("1 pressed")
+        global emergency_sound_thread
+        emergency_sound_thread = threading.Thread( target=play_emergency_sound, args=() )
+        emergency_sound_thread.start()
+
+    if (key == "z"):
+        print("z pressed")
+        background_sound_thread.do_run = False
+
+    if (key == "x"):
+        print("x pressed")
+        emergency_sound_thread.do_run = False
