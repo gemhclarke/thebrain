@@ -9,7 +9,7 @@ import sys, termios, tty, os, pygame, threading
 # ===================================================================
 
 def play_emergency_sound():
-    print("Playing emergency sound")
+    print("Playing emergency sound. There are " + str( threading.active_count() ) + " threads active")
     while getattr(emergency_sound_thread, "do_run", True):
         pygame.mixer.init()
         pygame.mixer.Channel(0).play( pygame.mixer.Sound('audio/alien_danger.wav') )
@@ -19,7 +19,7 @@ def play_emergency_sound():
 
 
 def play_background_sound():
-    print("Playing background sound")
+    print("Playing background sound. There are " + str( threading.active_count() ) + " threads active")
     while getattr(background_sound_thread, "do_run", True):
         pygame.mixer.init()
         pygame.mixer.Channel(1).play( pygame.mixer.Sound('audio/buzzer.wav') )
@@ -44,9 +44,6 @@ def get_keypress():
 # Main program 
 # ===================================================================
 
-# Start the background sound
-#bst = threading.Thread( target=play_background_sound, args=() )
-#bst.start()
 
 while True:
     key = get_keypress()
