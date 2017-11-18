@@ -12,25 +12,19 @@ def play_emergency_sound():
     print("Playing emergency sound")
     while getattr(emergency_sound_thread, "do_run", True):
         pygame.mixer.init()
-        pygame.mixer.music.load("audio/alien_danger.wav")
-        pygame.mixer.music.play()
-        while pygame.mixer.music.get_busy() == True:
+        pygame.mixer.Channel(0).play( pygame.mixer.Sound('audio/alien_danger.wav') )
+        while pygame.mixer.Channel(0).get_busy() == True:
             sleep(.25)
-
     print( "Stopping emergency sound" )
 
 
 def play_background_sound():
     print("Playing background sound")
-    print(threading.enumerate())
-
     while getattr(background_sound_thread, "do_run", True):
         pygame.mixer.init()
-        pygame.mixer.music.load("audio/buzzer.wav")
-        pygame.mixer.music.play()
-        while pygame.mixer.music.get_busy() == True:
+        pygame.mixer.Channel(1).play( pygame.mixer.Sound('audio/buzzer.wav') )
+        while pygame.mixer.Channel(1).get_busy() == True:
             sleep(.25)
-
     print( "Stopping background sound" )
 
 
