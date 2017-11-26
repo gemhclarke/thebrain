@@ -32,8 +32,9 @@ def leds_morph( colour, brightness ):
 
         if( (gyro_x > 30 or gyro_x < -30) or (gyro_y > 30 or gyro_y < -30) or (gyro_z > 30 or gyro_x < -30) ):
             print ("Emergency - gyroscope movement detected")
-            emergencySoundThread = threading.Thread(target=play_emergency_sound)
-            emergencySoundThread.start()
+            global emergency_sound_thread
+            emergency_sound_thread = threading.Thread(target=play_emergency_sound)
+            emergency_sound_thread.start()
             leds_gyro_emergency()
 
         bstick1.morph( index=led_number, red=r, green=g, blue=b, duration=400, steps=30)
@@ -55,8 +56,7 @@ def leds_gyro_emergency():
 
         if( (gyro_x < 30 and gyro_x > -30) and (gyro_y < 30 and gyro_y > -30) and (gyro_z < 30 and gyro_x > -30) ):
             print ("Emergency over, reverting back to normal mode")
-	    backgroundSoundThread = threading.Thread( target=play_background_sound, args=() )
-            backgroundSoundThread.start()
+            emergency_sound_thread.do_run = False
             break  
 
 
@@ -65,7 +65,6 @@ def adjust_brightness( colour, brightness ):
     # This function converts HEX to RGB and reduces each RGB value by the
     # same amount to act as a brightness control
     # The brightness argument can be anything from 0.1 to 255.0
-     
     r,g,b = bstick1._hex_to_rgb( colour ) 
     r = r * (brightness/100)
     g = g * (brightness/100)
@@ -74,27 +73,23 @@ def adjust_brightness( colour, brightness ):
 
 
 def play_emergency_sound():
-    print("Playing emergency sound")
-    pygame.mixer.init()
-    pygame.mixer.music.load("audio/alien_danger.wav")
-    pygame.mixer.music.play()
-    while pygame.mixer.music.get_busy() == True:
-        sleep(.25)
+    print("Playing emergency sound. There are " + str( threading.active_count() ) + " threads active")
+    while getattr(emergency_sound_thread, "do_run", True):
+        pygame.mixer.init()
+        pygame.mixer.Channel(0).play( pygame.mixer.Sound('audio/alien_danger.wav') )
+        while pygame.mixer.Channel(0).get_busy() == True:
+            sleep(.25)
+    print( "Stopping emergency sound" )
 
 
 def play_background_sound():
-    print("Starting background sound thread" )
-    t = threading.currentThread()
-    while getattr(t, "do_run", True):
-        print("Playing background sound")
+    print("Playing background sound. There are " + str( threading.active_count() ) + " threads active")
+    while getattr(background_sound_thread, "do_run", True):
         pygame.mixer.init()
-        pygame.mixer.music.load("audio/buzzer.wav")
-
-        while True:
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy() == True:
-                sleep(.25)
-    print( "Stopping background sound thread" )
+        pygame.mixer.Channel(1).play( pygame.mixer.Sound('audio/buzzer.wav') )
+        while pygame.mixer.Channel(1).get_busy() == True:
+            sleep(.25)
+    print( "Stopping background sound" )
 
 
 def monitor():
@@ -118,12 +113,13 @@ def monitor():
 # ===================================================================
 
 # Start the giroscope and accelerometer monitoring
-giroThread = threading.Thread( target=monitor, args=() )
-giroThread.start()
+giro_thread = threading.Thread( target=monitor, args=() )
+giro_thread.start()
 
 # Start the background sound
-bst = threading.Thread( target=play_background_sound, args=() )
-bst.start()
+global background_sound_thread
+background_sound_thread = threading.Thread( target=play_background_sound, args=() )
+background_sound_thread.start()
 
 # Reset all the LED's
 leds_reset()
